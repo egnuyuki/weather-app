@@ -1,0 +1,3 @@
+{
+    "laravelExtraIntellisense.phpCommand": "docker compose exec -T app php -r \"{code}\""
+}
