@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\Location;
+use App\Models\WeatherLog;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
@@ -16,6 +17,9 @@ class OpenMeteoService
         $result = $this->fetchForecast($locations);
         // 結果をJSONファイルに保存（デバッグ用）
         file_put_contents(storage_path('app/open_meteo_test.json'), json_encode($result, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
+        $formattedRecords = $this->formatRecords($result, $locations);
+        // フォーマットされたレコードをJSONファイルに保存（デバッグ用）
+        file_put_contents(storage_path('app/open_meteo_formatted.json'), json_encode($formattedRecords, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
     }
 
     public function fetchForecast(array $locations): ?array
@@ -64,5 +68,41 @@ class OpenMeteoService
             }
         }
         return null;
+    }
+
+    /**
+     * APIレスポンスを weather_forecasts の UPSERT 用配列に変換する。
+     *
+     * @param  array  $responseData  Open-Meteo のレスポンス（単一地点は連想配列、複数地点は配列）
+     * @param  array  $locations
+     * @return array
+     */
+    private function formatRecords(array $responseData, array $locations): array
+    {
+        $records = [];
+        $fetchedAt = now()->toDateTimeString();
+
+        foreach ($responseData as $index => $locationData) {
+            $locationId = $locations[$index]['id'];
+            $hourly = $locationData['hourly'];
+            $times = $hourly['time'];
+            $count = count($times);
+
+            for ($i = 0; $i < $count; $i++) {
+                $dateData = [
+                    'location_id' => $locationId,
+                    'forecast_time' => $times[$i],
+                    'forecast_fetched_at' => $fetchedAt,
+                    'temperature_2m' => $hourly['temperature_2m'][$i] ?? null,
+                    'precipitation' => $hourly['precipitation'][$i] ?? null,
+                    'wind_speed_10m' => $hourly['wind_speed_10m'][$i] ?? null,
+                    'relative_humidity' => $hourly['relative_humidity_2m'][$i] ?? null,
+                    'weather_code' => $hourly['weathercode'][$i] ?? null,
+                ];
+                array_push($records, $dateData);
+            }
+        }
+
+        return $records;
     }
 }
