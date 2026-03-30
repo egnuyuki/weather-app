@@ -16,10 +16,10 @@ class OpenMeteoService
         $locations = Location::all(['id', 'latitude', 'longitude'])->toArray();
         $result = $this->fetchForecast($locations);
         // 結果をJSONファイルに保存（デバッグ用）
-        file_put_contents(storage_path('app/open_meteo_test.json'), json_encode($result, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
+        // file_put_contents(storage_path('app/open_meteo_test.json'), json_encode($result, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
         $formattedRecords = $this->formatRecords($result, $locations);
         // フォーマットされたレコードをJSONファイルに保存（デバッグ用）
-        file_put_contents(storage_path('app/open_meteo_formatted.json'), json_encode($formattedRecords, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
+        // file_put_contents(storage_path('app/open_meteo_formatted.json'), json_encode($formattedRecords, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
     }
 
     public function fetchForecast(array $locations): ?array
@@ -104,5 +104,44 @@ class OpenMeteoService
         }
 
         return $records;
+    }
+
+    /**
+     * WHO コードを日本語の天気説明に変換する
+     *
+     * @param int|null $weatherCode
+     * @return string
+     */
+    public function getWeatherDescription(?int $weatherCode): string
+    {
+        $descriptions = [
+            0 => '晴れ',
+            1 => '主に晴れ',
+            2 => '部分的に曇り',
+            3 => '曇り',
+            45 => '霧雨',
+            48 => '氷霧雨',
+            51 => '弱い降水',
+            53 => '中程度の降水',
+            55 => '強い降水',
+            56 => '弱い氷点下の降水',
+            57 => '強い氷点下の降水',
+            61 => '弱い雨',
+            63 => '中程度の雨',
+            65 => '強い雨',
+            66 => '弱い氷点下の雨',
+            67 => '強い氷点下の雨',
+            71 => '弱い雪',
+            73 => '中程度の雪',
+            75 => '強い雪',
+            77 => '雪片',
+            80 => '弱いにわか雨',
+            81 => '中程度のにわか雨',
+            82 => '強いにわか雨',
+            85 => '弱いにわか雪',
+            86 => '強いにわか雪',
+        ];
+
+        return $descriptions[$weatherCode] ?? '';
     }
 }
