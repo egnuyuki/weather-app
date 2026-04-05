@@ -78,7 +78,7 @@ class OpenMeteoService
      * @param  array  $locations
      * @return array
      */
-    private function formatRecords(array $responseData, array $locations): array
+    public function formatRecords(array $responseData, array $locations): array
     {
         $records = [];
         $fetchedAt = now()->toDateTimeString();
@@ -152,7 +152,7 @@ class OpenMeteoService
      * @param array $records フォーマットされたレコードの配列
      * @return void
      */
-    private function saveWeatherLogs(array $records): void
+    public function saveWeatherLogs(array $records): void
     {
         foreach ($records as $record) {
             WeatherLog::updateOrCreate(
