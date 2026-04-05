@@ -20,6 +20,7 @@ class OpenMeteoService
         $formattedRecords = $this->formatRecords($result, $locations);
         // フォーマットされたレコードをJSONファイルに保存（デバッグ用）
         // file_put_contents(storage_path('app/open_meteo_formatted.json'), json_encode($formattedRecords, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
+        $this->saveWeatherLogs($formattedRecords);
     }
 
     public function fetchForecast(array $locations): ?array
@@ -143,5 +144,31 @@ class OpenMeteoService
         ];
 
         return $descriptions[$weatherCode] ?? '';
+    }
+
+    /**
+     * 取得データを weather_logs テーブルに保存する
+     *
+     * @param array $records フォーマットされたレコードの配列
+     * @return void
+     */
+    private function saveWeatherLogs(array $records): void
+    {
+        foreach ($records as $record) {
+            WeatherLog::updateOrCreate(
+                [
+                    'location_id' => $record['location_id'],
+                    'forecast_time' => $record['forecast_time'],
+                ],
+                [
+                    'forecast_fetched_at' => $record['forecast_fetched_at'],
+                    'temperature_2m' => $record['temperature_2m'],
+                    'precipitation' => $record['precipitation'],
+                    'wind_speed_10m' => $record['wind_speed_10m'],
+                    'relative_humidity' => $record['relative_humidity'],
+                    'weather_code' => $record['weather_code'],
+                ]
+            );
+        }
     }
 }
