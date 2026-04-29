@@ -27,6 +27,7 @@ class WeatherLogController extends Controller
             return response()->json(['error' => 'location_id is required'], 400);
         }
 
+        // 指定した地点の最新の天気情報を取得
         $weatherLog = WeatherLog::where('location_id', $locationId)
             ->where('forecast_time', '<=', $now)
             ->orderBy('forecast_time', 'desc')
@@ -56,8 +57,10 @@ class WeatherLogController extends Controller
                 'weather_code' => $this->openMeteoService->getWeatherDescription($row->weather_code),
             ]);
 
+        // 地点の名前を取得
         $location = Location::find($locationId);
 
+        // 天気コードを天気の説明に変換
         $weatherStatus = $this->openMeteoService->getWeatherDescription($weatherLog->weather_code);
 
         // return response()->json($weatherLog);
@@ -71,7 +74,8 @@ class WeatherLogController extends Controller
             'min_temp' => $temps->min_temp,
             'graph_data' => $graphData,
             'last_updated' => $weatherLog->forecast_fetched_at,
-        ]);
+        ], 200, [], JSON_UNESCAPED_UNICODE);
+        // JSON_UNESCAPED_UNICODE を指定して日本語がエスケープされないようにする
     }
 }
 
