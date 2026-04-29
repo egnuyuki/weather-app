@@ -20,62 +20,66 @@ class WeatherLogController extends Controller
 
     public function current(Request $request): JsonResponse
     {
-        $locationId = $request->query('location_id');
-        $now = now();
+        try {
+            $locationId = $request->query('location_id');
+            $now = now();
 
-        if (is_null($locationId)) {
-            return response()->json(['error' => 'location_id is required'], 400);
-        }
+            if (is_null($locationId)) {
+                return response()->json(['error' => 'location_id は必須です'], 400);
+            }
 
-        // 指定した地点の最新の天気情報を取得
-        $weatherLog = WeatherLog::where('location_id', $locationId)
-            ->where('forecast_time', '<=', $now)
-            ->orderBy('forecast_time', 'desc')
-            ->first();
+            // 指定した地点の最新の天気情報を取得
+            $weatherLog = WeatherLog::where('location_id', $locationId)
+                ->whereDate('forecast_time', '<=', $now)
+                ->orderBy('forecast_time', 'desc')
+                ->first();
 
-        if (!$weatherLog) {
-            return response()->json(['error' => 'Weather log not found for the specified location_id'], 404);
-        }
+            if (!$weatherLog) {
+                return response()->json(['error' => '指定した地点の天気情報を見つけることができません'], 404);
+            }
 
-        // 今日の最高・最低気温（hourlyレコードのMAX/MIN）
-        $today = $now->toDateString();
-        $temps = WeatherLog::where('location_id', $locationId)
-            ->whereDate('forecast_time', $today)
-            ->selectRaw('MAX(temperature_2m) as max_temp, MIN(temperature_2m) as min_temp')
-            ->first();
+            // 今日の最高・最低気温（hourlyレコードのMAX/MIN）
+            $today = $now->toDateString();
+            $temps = WeatherLog::where('location_id', $locationId)
+                ->whereDate('forecast_time', $today)
+                ->selectRaw('MAX(temperature_2m) as max_temp, MIN(temperature_2m) as min_temp')
+                ->first();
 
             // 今日の24時間分グラフデータ
-        $graphData = WeatherLog::where('location_id', $locationId)
-            ->whereDate('forecast_time', $today)
-            ->orderBy('forecast_time')
-            ->get(['forecast_time', 'temperature_2m', 'precipitation', 'relative_humidity', 'weather_code'])
-            ->map(fn($row) => [
-                'time' => $row->forecast_time->format('H:i'),
-                'temp' => $row->temperature_2m,
-                'precipitation' => $row->precipitation,
-                'humidity' => $row->relative_humidity,
-                'weather_code' => $this->openMeteoService->getWeatherDescription($row->weather_code),
-            ]);
+            $graphData = WeatherLog::where('location_id', $locationId)
+                ->whereDate('forecast_time', $today)
+                ->orderBy('forecast_time')
+                ->get(['forecast_time', 'temperature_2m', 'precipitation', 'relative_humidity', 'weather_code'])
+                ->map(fn($row) => [
+                    'time' => $row->forecast_time->format('H:i'),
+                    'temp' => $row->temperature_2m,
+                    'precipitation' => $row->precipitation,
+                    'humidity' => $row->relative_humidity,
+                    'weather_code' => $this->openMeteoService->getWeatherDescription($row->weather_code),
+                ]);
 
-        // 地点の名前を取得
-        $location = Location::find($locationId);
+            // 地点の名前を取得
+            $location = Location::find($locationId);
 
-        // 天気コードを天気の説明に変換
-        $weatherStatus = $this->openMeteoService->getWeatherDescription($weatherLog->weather_code);
+            // 天気コードを天気の説明に変換
+            $weatherStatus = $this->openMeteoService->getWeatherDescription($weatherLog->weather_code);
 
-        // return response()->json($weatherLog);
-        return response()->json([
-            'location' => $location ? $location->name : 'Unknown',
-            'forecast_time' => $weatherLog->forecast_time,
-            'current_temp' => $weatherLog->temperature_2m,
-            'weather_code' => $weatherLog->weather_code,
-            'weather_status' => $weatherStatus ?? 'Unknown',
-            'max_temp' => $temps->max_temp,
-            'min_temp' => $temps->min_temp,
-            'graph_data' => $graphData,
-            'last_updated' => $weatherLog->forecast_fetched_at,
-        ], 200, [], JSON_UNESCAPED_UNICODE);
-        // JSON_UNESCAPED_UNICODE を指定して日本語がエスケープされないようにする
+            // return response()->json($weatherLog);
+            return response()->json([
+                'location' => $location ? $location->name : 'Unknown',
+                'forecast_time' => $weatherLog->forecast_time,
+                'current_temp' => $weatherLog->temperature_2m,
+                'weather_code' => $weatherLog->weather_code,
+                'weather_status' => $weatherStatus ?? 'Unknown',
+                'max_temp' => $temps->max_temp,
+                'min_temp' => $temps->min_temp,
+                'graph_data' => $graphData,
+                'last_updated' => $weatherLog->forecast_fetched_at,
+            ], 200, [], JSON_UNESCAPED_UNICODE);
+            // JSON_UNESCAPED_UNICODE を指定して日本語がエスケープされないようにする
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Failed to fetch weather data: ' . $e->getMessage()], 500);
+        }
     }
 }
 
