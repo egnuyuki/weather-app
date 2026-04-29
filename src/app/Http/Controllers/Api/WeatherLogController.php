@@ -25,7 +25,7 @@ class WeatherLogController extends Controller
             $now = now();
 
             if (is_null($locationId)) {
-                return response()->json(['error' => 'location_id は必須です'], 400);
+                return response()->json(['error' => 'location_id は必須です'], 400, [], JSON_UNESCAPED_UNICODE);
             }
 
             // 指定した地点の最新の天気情報を取得
@@ -35,7 +35,7 @@ class WeatherLogController extends Controller
                 ->first();
 
             if (!$weatherLog) {
-                return response()->json(['error' => '指定した地点の天気情報を見つけることができません'], 404);
+                return response()->json(['error' => '指定した地点の天気情報を見つけることができません'], 404, [], JSON_UNESCAPED_UNICODE);
             }
 
             // 今日の最高・最低気温（hourlyレコードのMAX/MIN）
@@ -82,10 +82,3 @@ class WeatherLogController extends Controller
         }
     }
 }
-
-// DB::table('weather_logs')
-//     ->where('location_id', 1)
-//     ->orderBy('forecast_time', 'desc')
-//     ->limit(6)
-//     ->get();
-// forecast_time が1時間ごとに並んでいるか確認
