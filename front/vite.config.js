@@ -10,4 +10,16 @@ export default defineConfig({
     tailwindcss(),
     babel({ presets: [reactCompilerPreset()] })
   ],
+  server: {
+    host: true,
+    port: 5173,
+    proxy: {
+      '/api': {
+        target: 'http://web:80',
+        changeOrigin: true,
+        // secure: false,
+        // rewrite: (path) => path.replace(/^\/api/, '')
+      }
+    }
+  }
 })

@@ -25,6 +25,15 @@ services:
       - db-store:/var/lib/mysql
     ports:
       - 3306:3306
-
+  node:
+    image: node:22-alpine
+    volumes:
+      - ./front:/app        # front/ ディレクトリをマウント
+    working_dir: /app
+    ports:
+      - "5173:5173"
+    command: sh -c "npm install && npm run dev -- --host"
+    depends_on:
+      - web
 volumes:
   db-store:
