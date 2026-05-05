@@ -18,10 +18,10 @@ const Setting = () => {
   console.log(isOpen);
 
   return isOpen ? (
-    <div className="fixed p-2 inset-0 bg-white bg-opacity-50 flex flex-col items-center justify-center gap-4">
+    <div className="fixed z-40 p-2 inset-0 bg-white bg-opacity-50 flex flex-col items-center justify-center gap-4">
       {/* 設定画面の内容 */}
       <div
-        className="fixed top-4 right-4 flex items-center gap-2 cursor-pointer bg-stone-100 shadow p-2 rounded-full w-fit"
+        className="fixed top-4 right-4 z-50 flex items-center gap-2 cursor-pointer bg-stone-100 shadow p-2 rounded-full w-fit"
         onClick={handleClose}
       >
         <X className="text-stone-600" />
@@ -36,7 +36,7 @@ const Setting = () => {
     </div>
   ) : (
     <div
-      className="fixed top-4 right-4 flex items-center gap-2 cursor-pointer bg-stone-100 shadow p-2 rounded-full w-fit"
+      className="fixed top-4 right-4 z-50 flex items-center gap-2 cursor-pointer bg-stone-100 shadow p-2 rounded-full w-fit"
       onClick={handleOpen}
     >
       <Settings className="text-stone-600" />
