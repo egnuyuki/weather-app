@@ -7,15 +7,15 @@ const Setting = () => {
 
   const handleOpen = () => {
     setIsOpen(true);
-    console.log("設定画面を開く");
+    // console.log("設定画面を開く");
   };
 
   const handleClose = () => {
     setIsOpen(false);
-    console.log("設定画面を閉じる");
+    // console.log("設定画面を閉じる");
   };
 
-  console.log(isOpen);
+  // console.log(isOpen);
 
   return isOpen ? (
     <div className="fixed z-40 p-2 inset-0 bg-white bg-opacity-50 flex flex-col items-center justify-center gap-4">

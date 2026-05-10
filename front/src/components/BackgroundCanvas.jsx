@@ -7,9 +7,9 @@ const BackgroundCanvas = ({ weatherCode }) => {
   const currentThemeRef = useRef(null)
 
   useEffect(() => {
-    console.log('天気コード:', weatherCode)
-    console.log(bgRef)
-    console.log(currentThemeRef)
+    // console.log('天気コード:', weatherCode)
+    // console.log(bgRef)
+    // console.log(currentThemeRef)
     if (bgRef.current === null) return
 
     const hour  = new Date().getHours()

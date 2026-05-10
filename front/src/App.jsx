@@ -1,14 +1,27 @@
 import { useWeather } from "./hooks/useWeather";
 import BackgroundCanvas from "./components/BackgroundCanvas";
 import Setting from "./components/Setting";
+import AmbientGraph from "./components/AmbientGraph";
+import { getTheme } from "./components/weatherTheme";
 
 function App() {
   const { data, isPending, isError } = useWeather();
+
+  const hour  = new Date().getHours()
+  const theme = getTheme(data?.weather_code ?? 0, hour)
 
   return (
     <>
       {/* Layer 0: 背景（データ取得前はデフォルト表示） */}
       <BackgroundCanvas weatherCode={data?.weather_code ?? 0} />
+
+      {/* Layer 1: 気温グラフ */}
+      {data && (
+        <AmbientGraph
+          graphData={data.graph_data}
+          textColor={theme.textColor}
+        />
+      )}
 
       {/* 設定パネル（最前面固定） */}
       <Setting />
