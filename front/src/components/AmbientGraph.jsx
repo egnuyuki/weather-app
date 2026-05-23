@@ -24,7 +24,7 @@ const AmbientGraph = ({ graphData, textColor }) => {
     };
 
   return (
-    <div className="fixed inset-0 z-10" style={{ outline: 'none' }}>
+    <div className="fixed inset-0 z-20" style={{ outline: 'none' }}>
       <ResponsiveContainer width="100%" height="100%">
         <AreaChart
           data={graphData}

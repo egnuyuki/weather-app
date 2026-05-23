@@ -1,4 +1,3 @@
-import { useState } from 'react'
 import Select from 'react-select'
 
 const options = [
@@ -45,19 +44,16 @@ const options = [
   { value: 41, label: '与那国町' },
 ]
 
-const AreaSelect = () => {
-  const [selectedOption, setSelectedOption] = useState(() => {
-    const area = localStorage.getItem('weatherArea')
-    return area ? JSON.parse(area) : null
-  });
+const AreaSelect = ({ location, onLocationChange }) => {
+
   const handleChange = (option) => {
-    setSelectedOption(option);
+    onLocationChange(option);
     localStorage.setItem('weatherArea', JSON.stringify(option));
   }
 
   return (
     <Select
-      value={selectedOption}
+      value={location}
       onChange={handleChange}
       options={options}
     />
